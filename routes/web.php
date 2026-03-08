@@ -15,6 +15,9 @@ Route::controller(TaskController::class)->prefix('tasks')->as('tasks.')->group(f
     Route::get('/', 'index')->name('index');
     Route::get('/create', 'create')->name('create');
     Route::post('/', 'store')->name('store');
+    Route::get('/{id}', 'show')->name('show');
+    Route::get('/{id}/edit', 'edit')->name('edit');
+    Route::put('/{id}/edit', 'update')->name('update');
 });
 
 require __DIR__.'/settings.php';

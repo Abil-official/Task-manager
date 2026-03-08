@@ -36,11 +36,32 @@ class TaskService
 
             $task = $this->taskRepo->create($taskData);
 
-            if (!empty($data['executor_ids'])) {
+            if (! empty($data['executor_ids'])) {
                 $task->executors()->sync($data['executor_ids']);
             }
 
             return $task;
         });
+    }
+
+    public function view($id)
+    {
+        return $this->taskRepo->find($id);
+    }
+
+    public function updateTask(string $id, array $data)
+    {
+        $taskData = [
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'due_date' => $data['due_date'] ?? null,
+            'creator_id' => auth()->id(),
+        ];
+        $task = $this->taskRepo->update($id, $taskData);
+        if (! empty($data['executor_ids'])) {
+            $task->executors()->sync($data['executor_ids']);
+        }
+
+        return $task;
     }
 }

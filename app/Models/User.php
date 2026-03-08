@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -55,18 +56,28 @@ class User extends Authenticatable
         ];
     }
 
+    public function userInfo(): HasOne
+    {
+        return $this->hasOne(UserInfo::class);
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class, 'creator_id');
     }
 
-    public function executors(): BelongsToMany
+    public function tasksAsExecutor(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'task_executors', 'task_id', 'executor_id');
+        return $this->belongsToMany(Task::class, 'task_executors', 'executor_id', 'task_id');
     }
 
     public function taskExecutors(): HasMany
     {
         return $this->hasMany(TaskExecutor::class);
+    }
+
+    public function taskLogs(): HasMany
+    {
+        return $this->hasMany(TaskLog::class);
     }
 }

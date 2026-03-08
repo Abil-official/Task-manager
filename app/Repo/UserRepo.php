@@ -13,7 +13,7 @@ class UserRepo
 
     public function getPaginated(array $params)
     {
-        $query = $this->user->query()->with(['executors']);
+        $query = $this->user->query()->with(['userInfo']);
 
         $query = $this->applySearch($query, $params['search'] ?? null);
         $query = $this->applySort($query, $params['sort_by'] ?? 'created_at', $params['sort_order'] ?? 'desc');
@@ -25,7 +25,11 @@ class UserRepo
     {
         return $query->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
-                $q->where('email', 'like', "%{$search}%");
+                $q->where('email', 'like', "%{$search}%")
+                    ->orWhereHas('userInfo', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         });
     }

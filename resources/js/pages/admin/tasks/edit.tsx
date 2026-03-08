@@ -25,23 +25,45 @@ interface User {
     };
 }
 
+interface Task {
+    id: string;
+    title: string;
+    description: string;
+    due_date: string | null;
+    executors: User[];
+}
+
 interface Props {
     users: {
         data: User[];
         links: any[];
     };
+    task: Task;
 }
 
-export default function Create({ users }: Props) {
-    const { data, setData, post, processing, errors } = useForm({
-        title: '',
-        description: '',
-        due_date: undefined as Date | undefined,
-        executor_ids: [] as string[],
+export default function Edit({ users, task }: Props) {
+    const { data, setData, put, processing, errors } = useForm({
+        title: task.title || '',
+        description: task.description || '',
+        due_date: task.due_date ? new Date(task.due_date) : null,
+        executor_ids: task.executors ? task.executors.map(u => u.id) : [],
     });
 
     const [userSearch, setUserSearch] = useState('');
     const [userRegistry, setUserRegistry] = useState<Record<string, User>>({});
+
+    // Initialize registry with existing executors if they aren't in current users page
+    useEffect(() => {
+        if (task.executors) {
+            setUserRegistry(prev => {
+                const next = { ...prev };
+                task.executors.forEach(user => {
+                    next[user.id] = user;
+                });
+                return next;
+            });
+        }
+    }, [task.executors]);
 
     // Update registry when new users are loaded
     useEffect(() => {
@@ -59,12 +81,12 @@ export default function Create({ users }: Props) {
     const handleUserSearch = useCallback(
         debounce((value: string) => {
             router.get(
-                route('tasks.create'),
+                route('tasks.edit', task.id),
                 { search: value },
                 { preserveState: true, replace: true, preserveScroll: true }
             );
         }, 300),
-        []
+        [task.id]
     );
 
     useEffect(() => {
@@ -86,20 +108,20 @@ export default function Create({ users }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('tasks.store'));
+        put(route('tasks.update', task.id));
     };
 
     // Get selected users for preview from registry
     const selectedUsers = data.executor_ids.map(id => userRegistry[id]).filter(Boolean);
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Tasks', href: route('tasks.index') }, { title: 'Create', href: route('tasks.create') }]}>
-            <Head title="Create Task" />
+        <AppLayout breadcrumbs={[{ title: 'Tasks', href: route('tasks.index') }, { title: task.title, href: route('tasks.show', task.id) }, { title: 'Edit', href: route('tasks.edit', task.id) }]}>
+            <Head title={`Edit Task: ${task.title}`} />
 
             <div className="p-6">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">Create Task</h1>
-                    <p className="text-muted-foreground">Configure your task details and assign them to your team.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Edit Task</h1>
+                    <p className="text-muted-foreground">Modify task details or update assignments.</p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -154,8 +176,8 @@ export default function Create({ users }: Props) {
                                             <PopoverContent className="w-auto p-0" align="start">
                                                 <Calendar
                                                     mode="single"
-                                                    selected={data.due_date}
-                                                    onSelect={date => setData('due_date', date)}
+                                                    selected={data.due_date || undefined}
+                                                    onSelect={date => setData('due_date', date || null)}
                                                     initialFocus
                                                 />
                                             </PopoverContent>
@@ -215,7 +237,7 @@ export default function Create({ users }: Props) {
                                     Discard
                                 </Button>
                                 <Button type="submit" disabled={processing} className="px-8 shadow-md">
-                                    Create Task
+                                    Update Task
                                 </Button>
                             </div>
                         </form>
@@ -296,14 +318,12 @@ export default function Create({ users }: Props) {
                                     </div>
                                 </div>
 
-                                {data.title && (
-                                    <div className="pt-2">
-                                        <div className="bg-primary/5 rounded-lg p-3 border border-primary/10 flex items-center justify-between transition-all">
-                                            <div className="text-[10px] font-semibold text-primary">STATUS PREVIEW</div>
-                                            <div className="text-[10px] bg-primary text-white px-2 py-0.5 rounded font-bold">READY TO CREATE</div>
-                                        </div>
+                                <div className="pt-2">
+                                    <div className="bg-primary/5 rounded-lg p-3 border-2 border-primary/20 flex items-center justify-between transition-all">
+                                        <div className="text-[10px] font-bold text-primary tracking-widest">EDIT MODE</div>
+                                        <div className="text-[10px] bg-primary text-white px-2 py-0.5 rounded font-bold uppercase tracking-wide">Ready to Sync</div>
                                     </div>
-                                )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

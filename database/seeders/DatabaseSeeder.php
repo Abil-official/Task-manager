@@ -15,9 +15,25 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'email' => 'dev@mailinator.com',
-            'password' => 'password',
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'dev@mailinator.com'],
+            ['password' => bcrypt('password')]
+        );
+
+        $user->userInfo()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'first_name' => 'Abil',
+                'last_name' => 'Rijal',
+            ]
+        );
+
+        // Seed some extra users for testing
+        User::factory(10)->create()->each(function ($u) {
+            $u->userInfo()->create([
+                'first_name' => fake()->firstName(),
+                'last_name' => fake()->lastName(),
+            ]);
+        });
     }
 }

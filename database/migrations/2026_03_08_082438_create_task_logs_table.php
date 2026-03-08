@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('task_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('task_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('task_id');
+            $table->foreignUuid('user_id');
             $table->string('action');
             $table->text('description')->nullable();
             $table->timestampsTz();
+
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('task_id')->references('id')->on('tasks');
         });
     }
 

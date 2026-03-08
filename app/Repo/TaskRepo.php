@@ -19,7 +19,11 @@ class TaskRepo implements BaseRepo
 
     public function find(string $id)
     {
-        return $this->task->findOrFail($id);
+        return $this->task->with([
+            'creator.userInfo',
+            'executors.userInfo',
+            'taskLogs.user.userInfo'
+        ])->findOrFail($id);
     }
 
     public function create(array $data)
@@ -42,7 +46,7 @@ class TaskRepo implements BaseRepo
 
     public function getPaginated(array $params)
     {
-        $query = $this->task->query()->with(['creator', 'executors']);
+        $query = $this->task->query()->with(['creator.userInfo', 'executors.userInfo']);
 
         $query = $this->applySearch($query, $params['search'] ?? null);
         $query = $this->applySort($query, $params['sort_by'] ?? 'created_at', $params['sort_order'] ?? 'desc');

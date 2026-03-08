@@ -31,7 +31,7 @@ class Task extends Model
 
     public function executors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'task_executors', 'executor_id', 'task_id');
+        return $this->belongsToMany(User::class, 'task_executors', 'task_id', 'executor_id')->withPivot('status')->withTimestamps();
     }
 
     public function taskExecutors(): HasMany

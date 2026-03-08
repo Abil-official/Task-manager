@@ -12,6 +12,10 @@ import { Button } from '@/components/ui/button';
 interface Executor {
     id: string;
     email: string;
+    userInfo?: {
+        first_name: string;
+        last_name: string;
+    };
 }
 
 interface Task {
@@ -20,6 +24,10 @@ interface Task {
     description: string;
     creator: {
         email: string;
+        userInfo?: {
+            first_name: string;
+            last_name: string;
+        };
     };
     executors: Executor[];
 }
@@ -82,12 +90,35 @@ export default function Index({ tasks, filters }: Props) {
                         <TableBody>
                             {tasks.data.length > 0 ? (
                                 tasks.data.map((task) => (
-                                    <TableRow key={task.id}>
-                                        <TableCell className="font-medium">{task.title}</TableCell>
-                                        <TableCell>{task.description}</TableCell>
-                                        <TableCell>{task.creator.email}</TableCell>
+                                    <TableRow key={task.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => router.get(route('tasks.show', task.id))}>
+                                        <TableCell className="font-medium text-primary hover:underline">
+                                            {task.title}
+                                        </TableCell>
                                         <TableCell>
-                                            {task.executors.map((e) => e.email).join(', ') || 'No executors'}
+                                            <div className="max-w-[400px] line-clamp-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                                                {task.description}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {task.creator.userInfo ? `${task.creator.userInfo.first_name} ${task.creator.userInfo.last_name}` : task.creator.email}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                {task.executors.length > 0 ? (
+                                                    <>
+                                                        <span className="text-sm">
+                                                            {task.executors.slice(0, 2).map((e) => e.userInfo ? `${e.userInfo.first_name} ${e.userInfo.last_name}` : e.email).join(', ')}
+                                                        </span>
+                                                        {task.executors.length > 2 && (
+                                                            <span className="text-[10px] bg-slate-100 text-muted-foreground px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
+                                                                +{task.executors.length - 2} more
+                                                            </span>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <span className="text-muted-foreground italic text-xs">No executors</span>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))

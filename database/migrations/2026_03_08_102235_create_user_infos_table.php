@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_infos', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->foreignUuid('user_id')->primary();
+            $table->string('first_name');
+            $table->string('middle_name')->nullable();
+            $table->string('last_name');
+
+            $table->timestampsTz();
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
