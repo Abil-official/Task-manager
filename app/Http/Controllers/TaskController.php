@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Services\TaskLogService;
 use App\Services\TaskService;
 use App\Services\UserService;
@@ -78,5 +79,15 @@ class TaskController extends Controller
         $this->taskLogService->createLog(type: 'update', taskId: $task->id);
 
         return redirect()->route('tasks.show', $id);
+    }
+
+    public function updateTaskStatus(UpdateTaskStatusRequest $request)
+    {
+        $validated = $request->validated();
+
+        $task = $this->taskService->updateTaskStatus($validated['id'], $validated['status']);
+        $this->taskLogService->createLog(type: 'status_update', taskId: $task->id, status: $validated['status']);
+
+        return redirect()->back();
     }
 }

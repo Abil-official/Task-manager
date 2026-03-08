@@ -8,6 +8,10 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { route } from 'ziggy-js';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { usePage } from '@inertiajs/react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface UserInfo {
     first_name: string;
@@ -54,6 +58,22 @@ interface Props {
 }
 
 export default function View({ task }: Props) {
+    const { auth } = usePage().props as any;
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const currentUserExecutor = task.executors.find(e => e.id === auth.user.id);
+    const currentStatus = currentUserExecutor?.pivot.status || 'pending';
+
+    const handleStatusChange = (newStatus: string) => {
+        setIsUpdating(true);
+        router.put(route('tasks.update-status', task.id), {
+            id: task.id,
+            status: newStatus
+        }, {
+            onFinish: () => setIsUpdating(false)
+        });
+    };
+
     const formattedDueDate = task.due_date ? format(new Date(task.due_date), "PPP") : "No deadline set";
     const formattedCreatedAt = format(new Date(task.created_at), "PPP");
 
@@ -172,6 +192,36 @@ export default function View({ task }: Props) {
                                 <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Metadata</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
+                                {/* My Status Update Section */}
+                                {currentUserExecutor && (
+                                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3 h-3" /> Your Assignment Status
+                                            </div>
+                                        </div>
+                                        <Select
+                                            disabled={isUpdating}
+                                            value={currentStatus}
+                                            onValueChange={handleStatusChange}
+                                        >
+                                            <SelectTrigger className="h-9 bg-white border-primary/20 hover:border-primary/40 transition-colors">
+                                                {isUpdating ? (
+                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
+                                                        <Loader2 className="w-3 h-3 animate-spin" /> Updating...
+                                                    </div>
+                                                ) : (
+                                                    <SelectValue placeholder="Select status" />
+                                                )}
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="pending" className="text-xs">Pending</SelectItem>
+                                                <SelectItem value="in_progress" className="text-xs">In Progress</SelectItem>
+                                                <SelectItem value="completed" className="text-xs text-green-600 font-medium">Completed</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
 
 
                                 {/* Due Date */}

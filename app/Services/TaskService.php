@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Repo\TaskRepo;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TaskService
 {
@@ -51,16 +53,32 @@ class TaskService
 
     public function updateTask(string $id, array $data)
     {
+        $task = $this->taskRepo->find($id);
+
         $taskData = [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'due_date' => $data['due_date'] ?? null,
-            'creator_id' => auth()->id(),
         ];
+
         $task = $this->taskRepo->update($id, $taskData);
+
         if (! empty($data['executor_ids'])) {
             $task->executors()->sync($data['executor_ids']);
         }
+
+        return $task;
+    }
+
+    public function updateTaskStatus($id, $status)
+    {
+        $task = $this->taskRepo->find($id);
+
+        if (! $task) {
+            throw new NotFoundHttpException('Task not found');
+        }
+
+        $task->executors()->updateExistingPivot(Auth::id(), ['status' => $status]);
 
         return $task;
     }

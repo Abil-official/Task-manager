@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { BookCheck, BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -26,7 +26,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Tasks',
         href: route('tasks.index'),
-        icon: LayoutGrid,
+        icon: BookCheck,
     },
 ];
 

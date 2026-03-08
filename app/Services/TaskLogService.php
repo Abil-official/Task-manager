@@ -15,17 +15,20 @@ class TaskLogService
         //
     }
 
-    public function createLog($type, $taskId)
+    public function createLog($type, $taskId, $status = null)
     {
         switch ($type) {
             case 'create':
                 $message = 'Task has been created.';
                 break;
             case 'update':
-                $message = 'Task status has been updated.';
+                $message = 'Task has been updated.';
+                break;
+            case 'status_update':
+                $message = "Task status has been updated to {$status}.";
                 break;
             default:
-                $message = 'Task status has been deleted.';
+                $message = 'Task action performed.';
                 break;
         }
         $data = [

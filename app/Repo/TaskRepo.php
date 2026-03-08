@@ -22,7 +22,7 @@ class TaskRepo implements BaseRepo
         return $this->task->with([
             'creator.userInfo',
             'executors.userInfo',
-            'taskLogs.user.userInfo'
+            'taskLogs.user.userInfo',
         ])->findOrFail($id);
     }
 
