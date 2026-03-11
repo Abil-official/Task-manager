@@ -33,7 +33,7 @@ class TaskService
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'due_date' => $data['due_date'] ?? null,
-                'creator_id' => auth()->id(),
+                'creator_id' => Auth::id(),
             ];
 
             $task = $this->taskRepo->create($taskData);
