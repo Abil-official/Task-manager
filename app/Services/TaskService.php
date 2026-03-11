@@ -53,7 +53,7 @@ class TaskService
 
     public function updateTask(string $id, array $data)
     {
-        $task = $this->taskRepo->find($id);
+        $task = $this->taskRepo->find($id)->lockForUpdate();
 
         $taskData = [
             'title' => $data['title'],
@@ -72,7 +72,7 @@ class TaskService
 
     public function updateTaskStatus($id, $status)
     {
-        $task = $this->taskRepo->find($id);
+        $task = $this->taskRepo->find($id)->lockForUpdate();
 
         if (! $task) {
             throw new NotFoundHttpException('Task not found');

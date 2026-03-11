@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Task;
-use App\Models\TaskExecutor;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -39,7 +38,7 @@ class DatabaseSeeder extends Seeder
         });
         $users = User::all();
 
-        Task::factory(20)->create()->each(function ($task) use ($users) {
+        Task::factory(1000)->create()->each(function ($task) use ($users) {
             $executors = $users->random(rand(2, 5));
             foreach ($executors as $executor) {
                 $task->executors()->attach($executor->id, [
@@ -48,4 +47,6 @@ class DatabaseSeeder extends Seeder
             }
         });
     }
+
+    public function exportTasks() {}
 }

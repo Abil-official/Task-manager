@@ -59,7 +59,28 @@ export default function Index({ tasks, filters }: Props) {
     useEffect(() => {
         handleSearch(search);
     }, [search, handleSearch]);
+    const [isExporting, setIsExporting] = useState(false);
+    const exportTasks = async () => {
+        try {
+            setIsExporting(true);
+            const response = await fetch(route('tasks.export-task'));
+            if (!response.ok) throw new Error('Export failed');
 
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tasks.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Export error:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    }
     return (
         <AppLayout breadcrumbs={[{ title: 'Tasks', href: '/tasks' }]}>
             <Head title="Tasks" />
@@ -74,7 +95,11 @@ export default function Index({ tasks, filters }: Props) {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <Button onClick={() => router.get(route('tasks.create'))} className='hover:bg-dark-500 hover:cursor-pointer'>Create</Button>
+                    <div className='flex gap-2'>
+                        <Button onClick={() => router.get(route('tasks.create'))} className='hover:bg-dark-500 hover:cursor-pointer'>Create</Button>
+                        <Button onClick={() => exportTasks()} disabled={isExporting} className='hover:bg-dark-500 hover:cursor-pointer'>{isExporting ? 'Exporting...' : 'Export'}</Button>
+                    </div>
+
                 </div>
 
                 <div className="bg-white rounded-md border">

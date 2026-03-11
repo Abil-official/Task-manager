@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportTask;
 use App\Http\Requests\CreateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Services\TaskLogService;
@@ -53,11 +54,7 @@ class TaskController extends Controller
         $task = $this->taskService->createTask($data);
         $this->taskLogService->createLog(type: 'create', taskId: $task->id);
 
-        Cache::forget('tasks:index:*'); // Simple approach, or use tags if supported by driver
-        // Clear all task index caches
-        // Note: Redis flush or specific pattern clearing would be better if we had many pages
-        // For now, clearing based on prefix if supported or just general clear
-        $this->clearTaskCache();
+        Cache::forget('tasks:index:*');
 
         return redirect()->route('tasks.index');
     }
@@ -111,32 +108,9 @@ class TaskController extends Controller
         return redirect()->back();
     }
 
-    private function clearTaskCache()
+    public function exportTask()
     {
-        // Ideally we use Cache Tags, but if using file/database driver it won't work.
-        // If Redis is used, we could search for keys, but simpler is to just clear
-        // or use a versioning strategy.
-        // For this task, I'll clear the known pattern if possible or just rely on
-        // short TTL / manual clear if the user has a specific needs.
-        // Since I don't know the exact cache driver config, I'll try to be safe.
-        // Laravel doesn't have a built-in 'forget by prefix' for all drivers.
-        // I will assume standard Cache usage.
-    }
 
-    public function indexJson(Request $request)
-    {
-        $filters = $request->only(['search', 'limit', 'page', 'sort_by', 'sort_order']);
-        $cacheKey = 'tasks:index:'.md5(serialize($filters));
-
-        $tasks = Cache::remember($cacheKey, 3600, function () use ($filters) {
-            return $this->taskService->getPaginatedTasks($filters);
-        });
-
-        return response()->json([
-            'tasks' => $tasks,
-            'filters' => [
-                'search' => $filters['search'] ?? '',
-            ],
-        ]);
+        return (new ExportTask)->download('tasks.xlsx');
     }
 }
