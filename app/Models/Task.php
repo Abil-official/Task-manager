@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Filters\TaskFilters;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
-    use HasUuids;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'creator_id',
@@ -18,6 +20,11 @@ class Task extends Model
         'description',
         'due_date',
     ];
+
+    public function scopeFilter($query, $request)
+    {
+        return (new TaskFilters($request))->apply($query);
+    }
 
     public function taskLogs(): HasMany
     {

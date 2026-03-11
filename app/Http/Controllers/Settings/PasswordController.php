@@ -29,4 +29,28 @@ class PasswordController extends Controller
 
         return back();
     }
+
+    public function store(Request $request)
+    {
+        // 1. Validation inside controller
+        $validated = $request->validate([
+            'trip_id' => 'required|exists:trips,id',
+            'email' => 'required|email',
+        ]);
+
+        // 2. Heavy Business Logic
+        $trip = Trip::find($request->trip_id);
+        $price = $trip->price;
+
+        // 3. Direct DB interaction
+        $booking = new Booking;
+        $booking->user_email = $request->email;
+        $booking->total = $price;
+        $booking->save();
+
+        // 4. Side effects (Slows response)
+        Mail::to($request->email)->send(new BookingConfirmed($booking));
+
+        return response()->json($booking);
+    }
 }

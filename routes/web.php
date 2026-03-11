@@ -12,6 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 Route::controller(TaskController::class)->prefix('tasks')->as('tasks.')->group(function () {
+    Route::get('/json', 'indexJson')->name('indexJson');
     Route::get('/', 'index')->name('index');
     Route::get('/create', 'create')->name('create');
     Route::post('/', 'store')->name('store');
